@@ -2,15 +2,15 @@ provider "azurerm" {
   features {}
 }
 
-data "azurerm_resource_group" "rg-cascade" {
-  name = "rg-cascade"
+data "azurerm_resource_group" "rg-main" {
+  name = ""
 }
 
-resource "azurerm_kubernetes_cluster" "aks-cascade" {
-  name                = "aks-cascade"
-  location            = data.azurerm_resource_group.rg-cascade.location
-  resource_group_name = data.azurerm_resource_group.rg-cascade.name
-  dns_prefix          = "cascade"
+resource "azurerm_kubernetes_cluster" "aks-main" {
+  name                = var.aks_main_name
+  location            = data.azurerm_resource_group.rg-main.location
+  resource_group_name = data.azurerm_resource_group.rg-main.name
+  dns_prefix          = var.dns_prefix
 
   default_node_pool {
     name       = "default"
@@ -29,25 +29,25 @@ resource "azurerm_kubernetes_cluster" "aks-cascade" {
 
 terraform {
   backend "azurerm" {
-    resource_group_name  = "rg-cascade"
-    storage_account_name = "satfstate120973"
-    container_name       = "sctfstate"
-    key                  = "terraform.tfstate"
+    resource_group_name  = ""
+    storage_account_name = ""
+    container_name       = ""
+    key                  = ""
   }
 }
 
-resource "azurerm_key_vault" "kv-cascade" {
-  name                        = "kv-cascade120973"
-  location                    = data.azurerm_resource_group.rg-cascade.location
-  resource_group_name         = data.azurerm_resource_group.rg-cascade.name
-  tenant_id                   = "4a1ec6af-75da-49e2-ba11-47353d07cfc8"
+resource "azurerm_key_vault" "kv-main" {
+  name                        = var.kv_main_name
+  location                    = data.azurerm_resource_group.rg-main.location
+  resource_group_name         = data.azurerm_resource_group.rg-main.name
+  tenant_id                   = var.tenant_id
   enabled_for_disk_encryption = true
 
   sku_name = "standard"
 
   access_policy {
-    tenant_id = "4a1ec6af-75da-49e2-ba11-47353d07cfc8"
-    object_id = "aaae219b-6339-4d7f-b88b-47b778a6bbc1"
+    tenant_id = var.tenant_id
+    object_id = var.kv_main_object_key
 
     key_permissions = [
       "Create",
@@ -93,7 +93,7 @@ resource "azurerm_key_vault" "kv-cascade" {
 }
 
 module "helm_wordpress" {
-  source = "./helm_wordpress"
+  source = "./modules/helm_wordpress"
 
   wordpressUsername = var.wordpressUsername
   wordpressPassword = var.wordpressPassword
